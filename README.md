@@ -862,29 +862,43 @@ PHP_Laravel12_Rest_Api_Authentication/
    
 <img width="1386" height="996" alt="Screenshot 2025-12-16 120358" src="https://github.com/user-attachments/assets/46778be2-bdef-4495-b750-7f6757c064a0" />
 
+
+
 **2) Login existing user** 
 
 <img width="1388" height="998" alt="Screenshot 2025-12-16 120522" src="https://github.com/user-attachments/assets/b1a3aa39-0823-4733-8de0-8455a9d20bde" />
 
+
+
 **3) List all products**
 
-<img width="1388" height="998" alt="Screenshot 2025-12-16 120522" src="https://github.com/user-attachments/assets/035fb26b-1832-4e76-ad87-66aad9e43a83" />
+<img width="1386" height="999" alt="Screenshot 2025-12-16 120901" src="https://github.com/user-attachments/assets/8cabdb67-cb54-4716-8e0e-fdfff6d1f169" />
+
+
 
 **4) Add a new product**
 
-<img width="1381" height="1001" alt="Screenshot 2025-12-16 111029" src="https://github.com/user-attachments/assets/13b66af1-b56e-444b-a16b-9ab31b07da6e" />
+<img width="1389" height="977" alt="Screenshot 2025-12-16 120649" src="https://github.com/user-attachments/assets/a2cb9f38-74fd-4546-bf7c-9e1c9c8c68ac" />
+
+
 
 **5) Show single product**
 
-<img width="1381" height="1001" alt="Screenshot 2025-12-16 111029" src="https://github.com/user-attachments/assets/00613695-ed85-4db8-937c-f139b53a25e9" />
+<img width="1388" height="999" alt="Screenshot 2025-12-16 120746" src="https://github.com/user-attachments/assets/a22316aa-2d50-413b-9008-d70427b88725" />
+
+
 
 **6) Update product**
 
-<img width="1381" height="1001" alt="Screenshot 2025-12-16 111029" src="https://github.com/user-attachments/assets/2a992aff-c94c-4f15-93cb-7fb02e3d8a0c" />
+<img width="1386" height="993" alt="Screenshot 2025-12-16 121020" src="https://github.com/user-attachments/assets/5784e403-7238-4ee6-8d46-af0d3a6c4ed5" />
+
+
 
 **7) Soft delete product**
 
-<img width="1387" height="991" alt="Screenshot 2025-12-16 121109" src="https://github.com/user-attachments/assets/d645ed89-36d4-4528-97ff-0ea87dda2598" />
+<img width="1387" height="991" alt="Screenshot 2025-12-16 121109" src="https://github.com/user-attachments/assets/c9f2e08c-708c-4b0c-b20c-ce3564e6f48d" />
+
+
 
 
 ---
