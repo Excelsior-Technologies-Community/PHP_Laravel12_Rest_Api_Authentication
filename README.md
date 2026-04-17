@@ -898,7 +898,10 @@ PHP_Laravel12_Rest_Api_Authentication/
 
 <img width="1387" height="991" alt="Screenshot 2025-12-16 121109" src="https://github.com/user-attachments/assets/c9f2e08c-708c-4b0c-b20c-ce3564e6f48d" />
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> development
 
 
 ---
