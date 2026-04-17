@@ -900,6 +900,9 @@ PHP_Laravel12_Rest_Api_Authentication/
 
 
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> development
 ---
 Your PHP_Laravel12_Rest_Api_Authentication Project is Now Ready!
