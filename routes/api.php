@@ -16,8 +16,8 @@ use App\Http\Controllers\API\ProductController;
 |--------------------------------------------------------------------------
 | These routes are publicly accessible for registering and logging in users.
 */
-Route::post('register',[RegisterController::class,'register']); // Register a new user
-Route::post('login',[RegisterController::class,'login']);       // Login and get Sanctum API token
+Route::post('register', [RegisterController::class, 'register']); // Register a new user
+Route::post('login', [RegisterController::class, 'login']);       // Login and get Sanctum API token
 
 /*
 |--------------------------------------------------------------------------
