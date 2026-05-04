@@ -7,135 +7,184 @@ use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\ProductResource;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\File;
 
-/**
- * ProductController handles all Product-related API operations.
- * This includes listing, creating, showing, updating, and soft deleting products.
- * It extends BaseController to use standardized API response methods.
- */
 class ProductController extends BaseController
 {
     /**
-     * List all active products.
-     * 
-     * @return \Illuminate\Http\JsonResponse
+     * @OA\Get(
+     *     path="/api/listProducts",
+     *     summary="Get list of products",
+     *     tags={"Products"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="search", in="query", @OA\Schema(type="string")),
+     *     @OA\Response(response=200, description="Successful")
+     * )
      */
-    public function listProducts()
+    public function listProducts(Request $request)
     {
-        // Fetch only products with status = 1 (active)
-        $products = Product::where('status', 1)->get();
+        $query = Product::where('status', 1);
 
-        // Return success response with product collection
+        if ($request->has('search')) {
+            $query->where('name', 'LIKE', '%' . $request->search . '%');
+        }
+
+        $products = $query->latest()->paginate(10);
+
         return $this->sendResponse(
-            ProductResource::collection($products),
+            ProductResource::collection($products)->response()->getData(true),
             'Products retrieved successfully'
         );
     }
 
     /**
-     * Create a new product.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @OA\Post(
+     *     path="/api/addProduct",
+     *     summary="Add new product",
+     *     tags={"Products"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         @OA\MediaType(
+     *             mediaType="multipart/form-data",
+     *             @OA\Schema(
+     *                 @OA\Property(property="name", type="string"),
+     *                 @OA\Property(property="detail", type="string"),
+     *                 @OA\Property(property="image", type="string", format="binary")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=200, description="Successful")
+     * )
      */
     public function createProduct(Request $request)
     {
-        // Create a new product record
-        $product = Product::create([
-            'name'       => $request->name,          // Product name
-            'detail'     => $request->detail,        // Product detail/description
-            'status'     => 1,                        // Default status = active
-            'created_by' => Auth::id(),              // ID of the logged-in user creating the product
+        $validator = Validator::make($request->all(), [
+            'name' => 'required',
+            'detail' => 'required',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048'
         ]);
 
-        // Return success response with the newly created product
-        return $this->sendResponse(
-            new ProductResource($product),
-            'Product created successfully'
-        );
+        if ($validator->fails()) {
+            return $this->sendError('Validation Error', $validator->errors());
+        }
+
+        $input = $request->all();
+        $input['status'] = 1;
+        $input['created_by'] = Auth::id();
+
+        if ($request->hasFile('image')) {
+            $imageName = time() . '.' . $request->image->extension();
+            $request->image->move(public_path('products'), $imageName);
+            $input['image'] = $imageName;
+        }
+
+        $product = Product::create($input);
+
+        return $this->sendResponse(new ProductResource($product), 'Product created successfully');
     }
 
     /**
-     * Show details of a single product.
-     *
-     * @param int $id
-     * @return \Illuminate\Http\JsonResponse
+     * @OA\Get(
+     *     path="/api/showProduct/{id}",
+     *     summary="Get product details",
+     *     tags={"Products"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, description="Successful")
+     * )
      */
     public function showProduct($id)
     {
-        // Find product by ID
         $product = Product::find($id);
 
-        // Return error if product not found
         if (!$product) {
             return $this->sendError('Product not found');
         }
 
-        // Return success response with product details
-        return $this->sendResponse(
-            new ProductResource($product),
-            'Product retrieved successfully'
-        );
+        return $this->sendResponse(new ProductResource($product), 'Product retrieved successfully');
     }
 
     /**
-     * Update an existing product.
-     *
-     * @param Request $request
-     * @param int $id
-     * @return \Illuminate\Http\JsonResponse
+     * @OA\Post(
+     *     path="/api/updateProduct/{id}",
+     *     summary="Update product",
+     *     tags={"Products"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\RequestBody(
+     *         @OA\MediaType(
+     *             mediaType="multipart/form-data",
+     *             @OA\Schema(
+     *                 @OA\Property(property="name", type="string"),
+     *                 @OA\Property(property="detail", type="string"),
+     *                 @OA\Property(property="image", type="string", format="binary")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=200, description="Successful")
+     * )
      */
     public function updateProduct(Request $request, $id)
     {
-        // Find product by ID
         $product = Product::find($id);
 
-        // Return error if product not found
         if (!$product) {
             return $this->sendError('Product not found');
         }
 
-        // Update product details
-        $product->update([
-            'name'        => $request->name,          // Updated product name
-            'detail'      => $request->detail,        // Updated product detail
-            'updated_by'  => Auth::id(),             // ID of logged-in user updating the product
+        $validator = Validator::make($request->all(), [
+            'name' => 'required',
+            'detail' => 'required',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048'
         ]);
 
-        // Return success response with updated product
-        return $this->sendResponse(
-            new ProductResource($product),
-            'Product updated successfully'
-        );
+        if ($validator->fails()) {
+            return $this->sendError('Validation Error', $validator->errors());
+        }
+
+        $input = $request->all();
+        $input['updated_by'] = Auth::id();
+
+        if ($request->hasFile('image')) {
+            if ($product->image && file_exists(public_path('products/' . $product->image))) {
+                File::delete(public_path('products/' . $product->image));
+            }
+            $imageName = time() . '.' . $request->image->extension();
+            $request->image->move(public_path('products'), $imageName);
+            $input['image'] = $imageName;
+        }
+
+        $product->update($input);
+
+        return $this->sendResponse(new ProductResource($product), 'Product updated successfully');
     }
 
     /**
-     * Soft delete a product.
-     * Also sets status = 0 before deletion.
-     *
-     * @param int $id
-     * @return \Illuminate\Http\JsonResponse
+     * @OA\Post(
+     *     path="/api/deleteProduct/{id}",
+     *     summary="Soft delete product",
+     *     tags={"Products"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, description="Successful")
+     * )
      */
     public function deleteProduct($id)
     {
-        // Find product by ID
         $product = Product::find($id);
 
-        // Return error if product not found
         if (!$product) {
             return $this->sendError('Product not found');
         }
 
-        // Set status to 0 before soft delete
         $product->update([
-            'status' => 0,             // Mark product as inactive
-            'updated_by' => Auth::id(),// ID of user performing deletion
+            'status' => 0,
+            'updated_by' => Auth::id(),
         ]);
 
-        // Perform soft delete
         $product->delete();
 
-        // Return success response
         return $this->sendResponse([], 'Product deleted successfully');
     }
 }
