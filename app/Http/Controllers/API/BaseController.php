@@ -6,41 +6,44 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 /**
- * BaseController provides common API response methods.
- * Other API controllers can extend this class to use standardized responses.
+ * @OA\Info(
+ *    title="Laravel 12 REST API Documentation",
+ *    version="1.0.0",
+ *    description="API endpoints for Product and User management system",
+ *    @OA\Contact(
+ *        email="admin@example.com"
+ *    )
+ * )
+ * 
+ * @OA\Server(
+ *      url=L5_SWAGGER_CONST_HOST,
+ *      description="Main API Server"
+ * )
+ *
+ * @OA\SecurityScheme(
+ *     type="http",
+ *     securityScheme="bearerAuth",
+ *     scheme="bearer",
+ *     bearerFormat="JWT"
+ * )
  */
 class BaseController extends Controller
 {
-    /**
-     * Send a successful JSON response.
-     *
-     * @param mixed $data    The data to return in the response
-     * @param string $message  A message describing the response
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function sendResponse($data, $message)
     {
         return response()->json([
-            'success' => true,  // Indicates success
-            'data' => $data,    // Response data
-            'message' => $message // Informational message
-        ], 200); // HTTP status code 200 OK
+            'success' => true,
+            'data' => $data,
+            'message' => $message
+        ], 200);
     }
 
-    /**
-     * Send an error JSON response.
-     *
-     * @param string $message  The error message
-     * @param array $errors    Optional array of detailed errors
-     * @param int $code        HTTP status code (default 401 Unauthorized)
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function sendError($message, $errors = [], $code = 401)
+    public function sendError($message, $errors = [], $code = 404)
     {
         return response()->json([
-            'success' => false, // Indicates failure
-            'message' => $message, // Error message
-            'errors' => $errors   // Optional detailed errors
-        ], $code); // HTTP status code
+            'success' => false,
+            'message' => $message,
+            'errors' => $errors
+        ], $code);
     }
 }

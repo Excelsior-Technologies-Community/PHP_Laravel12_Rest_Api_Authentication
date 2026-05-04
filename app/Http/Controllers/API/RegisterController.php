@@ -2,18 +2,27 @@
 
 namespace App\Http\Controllers\API;
 
-use App\Http\Controllers\Controller;    
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 
+/**
+ * @OA\Info(
+ *    title="Laravel 12 API Documentation",
+ *    version="1.0.0",
+ * )
+ * @OA\SecurityScheme(
+ *     type="http",
+ *     securityScheme="bearerAuth",
+ *     scheme="bearer",
+ *     bearerFormat="JWT"
+ * )
+ */
 class RegisterController extends BaseController
 {
-    //////////////////////////////////////////////////////
-    // 🔹 REGISTER
-    //////////////////////////////////////////////////////
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -41,9 +50,6 @@ class RegisterController extends BaseController
         ], 'User registered successfully');
     }
 
-    //////////////////////////////////////////////////////
-    // 🔹 LOGIN
-    //////////////////////////////////////////////////////
     public function login(Request $request)
     {
         if (Auth::attempt($request->only('email', 'password'))) {
@@ -64,9 +70,6 @@ class RegisterController extends BaseController
         return $this->sendError('Unauthorized', ['error' => 'Invalid credentials']);
     }
 
-    //////////////////////////////////////////////////////
-    // 🔹 LOGOUT
-    //////////////////////////////////////////////////////
     public function logout(Request $request)
     {
         $user = $request->user();
@@ -81,9 +84,19 @@ class RegisterController extends BaseController
         return $this->sendResponse([], 'Logged out successfully');
     }
 
-    //////////////////////////////////////////////////////
-    // 🔹 CHANGE PASSWORD
-    //////////////////////////////////////////////////////
+    public function logoutAllDevices(Request $request)
+    {
+        $user = $request->user();
+        $user->tokens()->delete();
+
+        $user->update([
+            'is_logged_in' => false,
+            'last_logout_at' => now()
+        ]);
+
+        return $this->sendResponse([], 'Logged out from all devices successfully');
+    }
+
     public function changePassword(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -107,9 +120,6 @@ class RegisterController extends BaseController
         return $this->sendResponse([], 'Password changed successfully');
     }
 
-    //////////////////////////////////////////////////////
-    // 🔹 UPDATE PROFILE
-    //////////////////////////////////////////////////////
     public function updateProfile(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -122,12 +132,37 @@ class RegisterController extends BaseController
         }
 
         $user = $request->user();
-
         $user->update([
             'name' => $request->name,
             'email' => $request->email
         ]);
 
         return $this->sendResponse($user, 'Profile updated successfully');
+    }
+
+    public function updateAvatar(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'avatar' => 'required|image|mimes:jpeg,png,jpg,webp|max:2048'
+        ]);
+
+        if ($validator->fails()) {
+            return $this->sendError('Validation Error', $validator->errors());
+        }
+
+        $user = $request->user();
+
+        if ($request->hasFile('avatar')) {
+            if ($user->avatar && file_exists(public_path('avatars/' . $user->avatar))) {
+                unlink(public_path('avatars/' . $user->avatar));
+            }
+
+            $fileName = time() . '.' . $request->avatar->extension();
+            $request->avatar->move(public_path('avatars'), $fileName);
+
+            $user->update(['avatar' => $fileName]);
+        }
+
+        return $this->sendResponse(['avatar_url' => asset('avatars/' . $user->avatar)], 'Avatar updated successfully');
     }
 }
